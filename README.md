@@ -60,3 +60,6 @@ Esto simula el comportamiento de un agente inteligente en condiciones reales.
 
 ```bash
 g++ main.cpp -o juego
+
+2. ejecutar el juego
+./juego
