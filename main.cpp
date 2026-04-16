@@ -3,77 +3,126 @@
 #include <ctime>
 using namespace std;
 
+// MATRIZ 10 x 11
 char tablero[10][11];
-int ratonX = 0, ratonY = 10;
+
+// POSICION RATON
+int ratonX = 0;
+int ratonY = 10;
+
+// CONTROL
 int acciones = 0;
 bool juegoActivo = true;
 
-// Inicializar tablero
+// -------------------------------------
+// LIMPIAR PANTALLA
+// -------------------------------------
+void limpiarPantalla() {
+    system("clear");   // Linux / Codespaces
+    // system("cls");  // Windows
+}
+
+// -------------------------------------
+// INICIALIZAR TABLERO
+// -------------------------------------
 void inicializar() {
-    for(int i=0;i<10;i++){
-        for(int j=0;j<11;j++){
+    for(int i = 0; i < 10; i++) {
+        for(int j = 0; j < 11; j++) {
             tablero[i][j] = '.';
         }
     }
 }
 
-// Colocar gatos
-void colocarGatos() {
+// -------------------------------------
+// COLOCAR ELEMENTOS
+// -------------------------------------
+void colocarElemento(char tipo, int cantidad) {
+
     int count = 0;
-    while(count < 5) {
+
+    while(count < cantidad) {
+
         int x = rand() % 10;
         int y = rand() % 11;
 
-        if(tablero[x][y] == '.' && !(x == ratonX && y == ratonY)) {
-            tablero[x][y] = 'G';
+        if(tablero[x][y] == '.' &&
+           !(x == ratonX && y == ratonY)) {
+
+            tablero[x][y] = tipo;
             count++;
         }
     }
 }
 
-// Colocar trampas
-void colocarTrampas() {
-    int count = 0;
-    while(count < 4) {
-        int x = rand() % 10;
-        int y = rand() % 11;
-
-        if(tablero[x][y] == '.' && !(x == ratonX && y == ratonY)) {
-            tablero[x][y] = 'T';
-            count++;
-        }
-    }
-}
-
-// Colocar queso
-void colocarQueso() {
-    while(true) {
-        int x = rand() % 10;
-        int y = rand() % 11;
-
-        if(tablero[x][y] == '.' && !(x == ratonX && y == ratonY)) {
-            tablero[x][y] = 'Q';
-            break;
-        }
-    }
-}
-
-// Imprimir tablero
+// -------------------------------------
+// TABLERO UNIFORME
+// -------------------------------------
 void imprimirTablero() {
-    cout << "\nTABLERO:\n";
-    for(int i=0;i<10;i++){
-        for(int j=0;j<11;j++){
+
+    cout << "\033[1;36m";
+    cout << "==============================================================\n";
+    cout << "                   RATON COME QUESO\n";
+    cout << "==============================================================\n";
+    cout << "\033[0m\n";
+
+    // COLUMNAS
+    cout << "     ";
+    for(int j = 0; j < 11; j++) {
+        if(j < 10) cout << " " << j << "  ";
+        else       cout << j << "  ";
+    }
+    cout << endl;
+
+    cout << "   +";
+    for(int j = 0; j < 11; j++) {
+        cout << "---+";
+    }
+    cout << endl;
+
+    // FILAS
+    for(int i = 0; i < 10; i++) {
+
+        cout << " " << i << " |";
+
+        for(int j = 0; j < 11; j++) {
+
+            string celda = " ";
+
             if(i == ratonX && j == ratonY)
-                cout << "R ";
+                celda = "R";
+
+            else if(tablero[i][j] == 'G')
+                celda = "G";
+
+            else if(tablero[i][j] == 'T')
+                celda = "T";
+
+            else if(tablero[i][j] == 'Q')
+                celda = "Q";
+
             else
-                cout << tablero[i][j] << " ";
+                celda = ".";
+
+            cout << " " << celda << " |";
+        }
+
+        cout << endl;
+
+        cout << "   +";
+        for(int j = 0; j < 11; j++) {
+            cout << "---+";
         }
         cout << endl;
     }
+
+    cout << endl;
 }
 
-// Movimiento
+// -------------------------------------
+// MOVER RATON
+// -------------------------------------
 void moverRaton(char dir) {
+
     int nuevoX = ratonX;
     int nuevoY = ratonY;
 
@@ -81,107 +130,157 @@ void moverRaton(char dir) {
     else if(dir == 's') nuevoX++;
     else if(dir == 'a') nuevoY--;
     else if(dir == 'd') nuevoY++;
-    else {
-        cout << "Movimiento invalido\n";
-        return;
-    }
+    else return;
 
-    if(nuevoX >= 0 && nuevoX < 10 && nuevoY >= 0 && nuevoY < 11){
+    if(nuevoX >= 0 && nuevoX < 10 &&
+       nuevoY >= 0 && nuevoY < 11) {
+
         ratonX = nuevoX;
         ratonY = nuevoY;
         acciones++;
-    } else {
-        cout << "No puedes salir del tablero\n";
     }
 }
 
-// Evaluar casilla
+// -------------------------------------
+// PERCEPCIONES
+// -------------------------------------
+void detectarAlertas() {
+
+    bool gato = false;
+    bool trampa = false;
+
+    if(ratonX > 0) {
+        if(tablero[ratonX-1][ratonY] == 'G') gato = true;
+        if(tablero[ratonX-1][ratonY] == 'T') trampa = true;
+    }
+
+    if(ratonX < 9) {
+        if(tablero[ratonX+1][ratonY] == 'G') gato = true;
+        if(tablero[ratonX+1][ratonY] == 'T') trampa = true;
+    }
+
+    if(ratonY > 0) {
+        if(tablero[ratonX][ratonY-1] == 'G') gato = true;
+        if(tablero[ratonX][ratonY-1] == 'T') trampa = true;
+    }
+
+    if(ratonY < 10) {
+        if(tablero[ratonX][ratonY+1] == 'G') gato = true;
+        if(tablero[ratonX][ratonY+1] == 'T') trampa = true;
+    }
+
+    cout << "================ PERCEPCIONES ================\n";
+
+    if(gato) cout << "Hay un gato cerca\n";
+    if(trampa) cout << "Hay una trampa cerca\n";
+
+    if(!gato && !trampa)
+        cout << "Zona segura\n";
+
+    cout << "==============================================\n";
+}
+
+// -------------------------------------
+// EVALUAR CASILLA
+// -------------------------------------
 void evaluarCasilla() {
+
     if(tablero[ratonX][ratonY] == 'G') {
-        cout << "\n💀 PERDISTE: te comio un gato\n";
+        cout << "\nGAME OVER: gato.\n";
         juegoActivo = false;
     }
+
     else if(tablero[ratonX][ratonY] == 'T') {
-        cout << "\n💀 PERDISTE: caíste en una trampa\n";
+        cout << "\nGAME OVER: trampa.\n";
         juegoActivo = false;
     }
+
     else if(tablero[ratonX][ratonY] == 'Q') {
-        cout << "\n🎉 GANASTE: encontraste el queso\n";
+        cout << "\nGANASTE: encontraste el queso.\n";
         juegoActivo = false;
     }
 }
 
-// Detectar alertas
-void detectarAlertas(int x, int y) {
-    bool gatoCerca = false;
-    bool trampaCerca = false;
-
-    if(x > 0){
-        if(tablero[x-1][y] == 'G') gatoCerca = true;
-        if(tablero[x-1][y] == 'T') trampaCerca = true;
-    }
-
-    if(x < 9){
-        if(tablero[x+1][y] == 'G') gatoCerca = true;
-        if(tablero[x+1][y] == 'T') trampaCerca = true;
-    }
-
-    if(y > 0){
-        if(tablero[x][y-1] == 'G') gatoCerca = true;
-        if(tablero[x][y-1] == 'T') trampaCerca = true;
-    }
-
-    if(y < 10){
-        if(tablero[x][y+1] == 'G') gatoCerca = true;
-        if(tablero[x][y+1] == 'T') trampaCerca = true;
-    }
-
-    cout << "\n--- PERCEPCIONES ---\n";
-
-    if(gatoCerca)
-        cout << "🐱 Hay un gato cerca\n";
-
-    if(trampaCerca)
-        cout << "⚠️ Hay una trampa cerca\n";
-
-    if(!gatoCerca && !trampaCerca)
-        cout << "✔️ No hay peligro cercano\n";
-
-    cout << "--------------------\n";
-}
-
-// Mostrar acción
+// -------------------------------------
+// ACCIONES
+// -------------------------------------
 void mostrarAccion(char mov) {
-    cout << "\n--- ACCION ---\n";
-    cout << "Movimiento: " << mov << endl;
-    cout << "Total acciones: " << acciones << endl;
-    cout << "----------------\n";
+
+    cout << "\nMovimiento: " << mov << endl;
+    cout << "Acciones realizadas: " << acciones << endl;
 }
 
+// -------------------------------------
+// MENU
+// -------------------------------------
+void menu() {
+
+    cout << "=====================================\n";
+    cout << "      RATON COME QUESO\n";
+    cout << "=====================================\n";
+    cout << "1. Iniciar Juego\n";
+    cout << "2. Salir\n";
+    cout << "Seleccione opcion: ";
+}
+
+// -------------------------------------
+// MAIN
+// -------------------------------------
 int main() {
+
     srand(time(0));
 
-    inicializar();
-    colocarGatos();
-    colocarTrampas();
-    colocarQueso();
+    int opcion;
 
-    cout << "🐭 JUEGO RATON COME QUESO\n";
+    do {
 
-    while(juegoActivo) {
-        imprimirTablero();
+        menu();
+        cin >> opcion;
 
-        char mov;
-        cout << "\nMovimiento (w/a/s/d): ";
-        cin >> mov;
+        if(opcion == 1) {
 
-        moverRaton(mov);
-        evaluarCasilla();
-        detectarAlertas(ratonX, ratonY);
-        mostrarAccion(mov);
-    }
+            acciones = 0;
+            juegoActivo = true;
+            ratonX = 0;
+            ratonY = 10;
 
-    cout << "\nJuego terminado en " << acciones << " acciones.\n";
+            inicializar();
+
+            colocarElemento('G', 5);
+            colocarElemento('T', 4);
+            colocarElemento('Q', 1);
+
+            while(juegoActivo) {
+
+                limpiarPantalla();
+
+                imprimirTablero();
+
+                char mov;
+                cout << "Movimiento (w/a/s/d): ";
+                cin >> mov;
+
+                moverRaton(mov);
+                evaluarCasilla();
+
+                if(juegoActivo) {
+                    detectarAlertas();
+                    mostrarAccion(mov);
+
+                    cout << "\nENTER para continuar...";
+                    cin.ignore();
+                    cin.get();
+                }
+            }
+
+            cout << "\nPartida terminada en "
+                 << acciones
+                 << " acciones.\n\n";
+        }
+
+    } while(opcion != 2);
+
+    cout << "\nHasta luego.\n";
 
     return 0;
 }
